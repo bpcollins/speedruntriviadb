@@ -20,18 +20,14 @@ def submit_score():
     username = score_data['username']
     score = score_data['score']
 
-    # Insert data into Supabase and get response
     response = supabase.table("scores").insert({"username": username, "score": score}).execute()
-    # Extract data from response for JSON serialization
     data = response.data if response else None
 
     return jsonify({'status': 'success', 'data': data})
 
 @app.route('/leaderboard', methods=['GET'])
 def leaderboard():
-    # Query data from Supabase and get response
     response = supabase.table("scores").select("*").order("score", desc=True).limit(10).execute()
-    # Extract data from response for JSON serialization
     data = response.data if response else None
 
     return jsonify(data)
