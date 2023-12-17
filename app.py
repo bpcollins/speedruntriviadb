@@ -6,7 +6,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-
 url = os.environ.get('SUPABASE_URL')
 key = os.environ.get('SUPABASE_KEY')
 supabase: Client = create_client(url, key)
@@ -27,9 +26,12 @@ def submit_score():
 
 @app.route('/leaderboard', methods=['GET'])
 def leaderboard():
-    data = supabase.table("scores").select("*").order("score", desc=True).limit(10).execute()
-
-    return jsonify(data.get('data', []))
+    try:
+        data = supabase.table("scores").select("*").order("score", desc=True).limit(10).execute()
+        return jsonify(data)
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "An error occurred fetching the leaderboard"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
