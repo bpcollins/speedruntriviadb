@@ -20,18 +20,21 @@ def submit_score():
     username = score_data['username']
     score = score_data['score']
 
-    data = supabase.table("scores").insert({"username": username, "score": score}).execute()
+    # Insert data into Supabase and get response
+    response = supabase.table("scores").insert({"username": username, "score": score}).execute()
+    # Extract data from response for JSON serialization
+    data = response.data if response else None
 
     return jsonify({'status': 'success', 'data': data})
 
 @app.route('/leaderboard', methods=['GET'])
 def leaderboard():
-    try:
-        data = supabase.table("scores").select("*").order("score", desc=True).limit(10).execute()
-        return jsonify(data)
-    except Exception as e:
-        print(e)
-        return jsonify({"error": "An error occurred fetching the leaderboard"}), 500
+    # Query data from Supabase and get response
+    response = supabase.table("scores").select("*").order("score", desc=True).limit(10).execute()
+    # Extract data from response for JSON serialization
+    data = response.data if response else None
+
+    return jsonify(data)
 
 if __name__ == '__main__':
     app.run(debug=True)
