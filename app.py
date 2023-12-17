@@ -1,22 +1,13 @@
 from flask import Flask, request, jsonify
-import sqlite3
+from supabase import create_client, Client
+import os
 
 app = Flask(__name__)
 
-def init_db():
-    with sqlite3.connect('my_database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS scores (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL,
-                score INTEGER NOT NULL
-            )
-        ''')
-        conn.commit()
-
-# Initialize the database
-init_db()
+# Use environment variables for sensitive data
+url = os.environ.get('SUPABASE_URL')
+key = os.environ.get('SUPABASE_KEY')
+supabase: Client = create_client(url, key)
 
 @app.route('/')
 def index():
@@ -28,21 +19,15 @@ def submit_score():
     username = score_data['username']
     score = score_data['score']
 
-    with sqlite3.connect('my_database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('INSERT INTO scores (username, score) VALUES (?, ?)', (username, score))
-        conn.commit()
+    data = supabase.table("scores").insert({"username": username, "score": score}).execute()
 
-    return jsonify({'status': 'success'})
+    return jsonify({'status': 'success', 'data': data})
 
 @app.route('/leaderboard', methods=['GET'])
 def leaderboard():
-    with sqlite3.connect('my_database.db') as conn:
-        cursor = conn.cursor()
-        cursor.execute('SELECT username, score FROM scores ORDER BY score DESC LIMIT 10')
-        top_scores = cursor.fetchall()
+    data = supabase.table("scores").select("*").order("score", desc=True).limit(10).execute()
 
-    return jsonify(top_scores)
+    return jsonify(data.get('data', []))
 
 if __name__ == '__main__':
     app.run(debug=True)
