@@ -31,5 +31,5 @@ supabase==2.3.0
 supafunc==0.3.1
 typing_extensions==4.9.0
 websockets==11.0.3
-Werkzeug==3.0.3
+Werkzeug==3.0.6
 zipp==3.19.1
